@@ -2,6 +2,8 @@ services:
   - type: web
     name: namecraft-backend
     runtime: node
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,10 +20,8 @@ services:
       - key: ETHERSCAN_API_KEY
         value: YourEtherscanApiKey
       - key: DATABASE_URL
-        value: ./backend/database.db
+        value: ./database.db
       - key: FREE_GENERATION_LIMIT
         value: 6
       - key: FREE_GENERATION_RESET_DAYS
         value: 1
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm start
