@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: namecraft-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: your_super_secret_jwt_key_change_this_in_production
+      - key: GEMINI_API_KEY
+        value: AIzaSyALxU7nQiI74j07E40ZGfsfRv83wMg5nug
+      - key: USDT_WALLET_ADDRESS
+        value: 0xf540dc7a1ab8131ab986c7dcaf46c0622d2fa483
+      - key: USDT_CONTRACT_ADDRESS
+        value: 0x55d398326f99059ff775485246999027b3197955
+      - key: BSCSCAN_API_KEY
+        value: YourBscScanApiKey
+      - key: ETHERSCAN_API_KEY
+        value: YourEtherscanApiKey
+      - key: DATABASE_URL
+        value: ./database.db
+      - key: FREE_GENERATION_LIMIT
+        value: 6
+      - key: FREE_GENERATION_RESET_DAYS
+        value: 1

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NameCraft AI — Business Name Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D98A;
+    --cream: #FAF7F0;
+    --ink: #1A1610;
+    --ink2: #3D3526;
+    --muted: #8B7D5E;
+    --surface: #FFFFFF;
+    --border: #E8E0CC;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* MODAL */
+  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
+  .modal.active { display: flex; align-items: center; justify-content: center; }
+  .modal-content { background-color: var(--cream); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; }
+  .modal-close { float: right; font-size: 28px; font-weight: bold; color: var(--ink2); cursor: pointer; }
+  .modal-close:hover { color: var(--gold); }
+  .modal h2 { font-family: 'Playfair Display', serif; margin-bottom: 1.5rem; }
+  .modal-field { margin-bottom: 1rem; }
+  .modal-field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 0.5rem; }
+  .modal-field input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; }
+  .modal-field input:focus { outline: none; border-color: var(--gold); }
+  .modal-btn { width: 100%; padding: 12px; background: var(--ink); color: var(--cream); border: none; border-radius: 50px; font-weight: 500; cursor: pointer; margin-top: 1rem; }
+  .modal-btn:hover { background: var(--ink2); }
+  .modal-link { text-align: center; margin-top: 1rem; font-size: 14px; }
+  .modal-link a { color: var(--gold); cursor: pointer; text-decoration: underline; }
+
+  /* NAV */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--ink); letter-spacing: -0.5px; }
+  .logo span { color: var(--gold); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .user-badge { font-size: 13px; color: var(--muted); }
+  .user-badge span { color: var(--gold); font-weight: 500; }
+  .nav-cta { background: var(--ink); color: var(--cream); border: none; padding: 9px 22px; border-radius: 40px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .nav-cta:hover { background: var(--ink2); }
+  .logout-btn { background: none; border: 1px solid var(--border); color: var(--ink2); padding: 8px 16px; border-radius: 40px; font-size: 13px; cursor: pointer; }
+  .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    max-width: 760px; margin: 0 auto;
+    padding: 5rem 2rem 3rem;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    background: #FFF8E7; border: 1px solid var(--gold-light);
+    color: var(--gold); font-size: 12px; font-weight: 500;
+    padding: 5px 16px; border-radius: 40px; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero p {
+    font-size: 18px; color: var(--muted); line-height: 1.7;
+    max-width: 540px; margin: 0 auto 2.5rem;
+    font-weight: 300;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--ink); color: var(--cream);
+    border: none; padding: 16px 36px; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500;
+    cursor: pointer; text-decoration: none;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .hero-cta:hover { background: var(--ink2); transform: translateY(-1px); }
+  .hero-cta .arrow { font-size: 20px; }
+
+  .proof { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 2.5rem; flex-wrap: wrap; }
+  .proof-item { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .proof-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); }
+
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 0 2.5rem; }
+
+  /* HOW IT WORKS */
+  .how { max-width: 900px; margin: 0 auto; padding: 4rem 2rem; }
+  .section-tag { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); font-weight: 500; margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--ink); margin-bottom: 0.5rem; }
+  .section-sub { font-size: 16px; color: var(--muted); margin-bottom: 2.5rem; font-weight: 300; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+  .step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+  }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #FFF8E7; border: 1px solid var(--gold-light);
+    color: var(--gold); font-weight: 500; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .step h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+  .step p { font-size: 14px; color: var(--muted); line-height: 1.6; font-weight: 300; }
+
+  /* TOOL */
+  .tool-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 4rem 2rem; }
+  .tool-inner { max-width: 720px; margin: 0 auto; }
+  .form-card { background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-top: 2rem; }
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--ink2); margin-bottom: 7px; }
+  .field { margin-bottom: 1.25rem; }
+  input, select, textarea {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+  textarea { height: 90px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media(max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  .gen-btn {
+    width: 100%; padding: 14px;
+    background: var(--ink); color: var(--cream);
+    border: none; border-radius: 50px;
+    font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500;
+    cursor: pointer; margin-top: 0.5rem;
+    transition: background 0.15s, transform 0.12s;
+  }
+  .gen-btn:hover { background: var(--ink2); transform: translateY(-1px); }
+  .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .limit-info { font-size: 12px; color: var(--gold); margin-top: 0.5rem; }
+
+  /* RESULTS */
+  #results { margin-top: 2rem; }
+  .results-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 1rem;
+  }
+  .name-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem;
+    margin-bottom: 10px; display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 1rem;
+    animation: fadeUp 0.3s ease both;
+  }
+  .name-card:nth-child(2) { animation-delay: 0.05s; }
+  .name-card:nth-child(3) { animation-delay: 0.1s; }
+  .name-card:nth-child(4) { animation-delay: 0.15s; }
+  .name-card:nth-child(5) { animation-delay: 0.2s; }
+  .name-card:nth-child(6) { animation-delay: 0.25s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .name-title { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); margin-bottom: 4px; }
+  .name-tagline { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 4px; }
+  .name-why { font-size: 13px; color: var(--ink2); font-weight: 300; }
+  .name-actions { display: flex; gap: 8px; align-items: center; }
+  .save-btn { background: none; border: none; color: var(--gold); cursor: pointer; font-size: 16px; }
+  .save-btn:hover { transform: scale(1.2); }
+  .name-num {
+    font-size: 11px; font-weight: 500;
+    background: #FFF8E7; color: var(--gold);
+    border: 1px solid var(--gold-light);
+    padding: 4px 10px; border-radius: 40px;
+    flex-shrink: 0;
+  }
+  .loading-state { text-align: center; padding: 2.5rem; color: var(--muted); font-size: 15px; font-weight: 300; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { background: #FFF0F0; border: 1px solid #FFC5C5; border-radius: 8px; padding: 14px 18px; color: #A33; font-size: 14px; margin-top: 1rem; }
+  .regen-btn { display: block; width: 100%; text-align: center; margin-top: 12px; font-size: 14px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 40px; padding: 9px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .regen-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* PRICING */
+  .pricing { max-width: 860px; margin: 0 auto; padding: 5rem 2rem; text-align: center; }
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 2.5rem; }
+  .plan {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 2rem 1.75rem; text-align: left;
+  }
+  .plan.featured {
+    background: var(--ink); border-color: var(--ink);
+    color: var(--cream);
+  }
+  .plan-badge {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    background: var(--gold); color: var(--ink);
+    padding: 3px 12px; border-radius: 40px; font-weight: 500;
+    display: inline-block; margin-bottom: 1.25rem;
+  }
+  .plan-name { font-size: 18px; font-weight: 500; margin-bottom: 6px; }
+  .plan.featured .plan-name { color: var(--cream); }
+  .plan-price { font-family: 'Playfair Display', serif; font-size: 40px; margin-bottom: 0.25rem; }
+  .plan-price sup { font-size: 20px; vertical-align: super; font-family: 'DM Sans', sans-serif; }
+  .plan-period { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+  .plan.featured .plan-period { color: #9E9080; }
+  .plan-features { list-style: none; }
+  .plan-features li { font-size: 14px; padding: 6px 0; display: flex; gap: 8px; align-items: flex-start; border-bottom: 1px solid; }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan .plan-features li { border-color: var(--border); color: var(--ink2); }
+  .plan.featured .plan-features li { border-color: #2E2820; color: #C5B89A; }
+  .check { color: var(--gold); font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .plan-ctas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .plan-ctas .plan-cta {
+    margin-top: 0;
+  }
+  .plan-cta {
+    display: block; width: 100%; margin-top: 1.75rem;
+    padding: 12px; border-radius: 40px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; cursor: pointer; text-align: center;
+    text-decoration: none;
+  }
+  .plan .plan-cta { background: none; border: 1px solid var(--border); color: var(--ink); }
+  .plan .plan-cta:hover { border-color: var(--gold); color: var(--gold); }
+  .plan.featured .plan-cta { background: var(--gold); color: var(--ink); border: none; }
+  .plan.featured .plan-cta:hover { background: var(--gold-light); }
+
+  /* FAQ */
+  .faq { max-width: 640px; margin: 0 auto; padding: 0 2rem 5rem; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q {
+    width: 100%; text-align: left; background: none; border: none;
+    padding: 1.25rem 0; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500; color: var(--ink);
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq-icon { font-size: 20px; color: var(--muted); transition: transform 0.2s; }
+  .faq-a { font-size: 14px; color: var(--muted); line-height: 1.7; font-weight: 300; padding-bottom: 1.25rem; display: none; }
+  .faq-item.open .faq-a { display: block; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* FOOTER */
+  footer {
+    background: var(--ink); color: #6B5F4A;
+    text-align: center; padding: 2rem;
+    font-size: 13px;
+  }
+  footer a { color: var(--gold); text-decoration: none; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Name<span>Craft</span> AI</div>
+  <div class="nav-right">
+    <div id="userInfo" class="hidden">
+      <div class="user-badge">Logged in as <span id="userEmail"></span></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <button id="authBtn" class="nav-cta" onclick="showLoginModal()">Login / Sign Up</button>
+  </div>
+</nav>
+
+<!-- LOGIN MODAL -->
+<div id="authModal" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('authModal')">&times;</span>
+    <h2>Join NameCraft AI</h2>
+    <div id="authForm">
+      <div class="modal-field">
+        <label>Email</label>
+        <input type="email" id="authEmail" placeholder="your@email.com"/>
+      </div>
+      <div class="modal-field">
+        <label>Password</label>
+        <input type="password" id="authPassword" placeholder="••••••••"/>
+      </div>
+      <div class="modal-field" id="nameField" style="display:none;">
+        <label>Name</label>
+        <input type="text" id="authName" placeholder="Your name"/>
+      </div>
+      <button class="modal-btn" onclick="toggleAuthMode()">Don't have an account? Sign Up</button>
+      <button class="modal-btn" style="background: var(--gold); color: var(--ink);" onclick="authenticate()">Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <div class="badge">✦ AI-Powered Naming Tool</div>
+  <h1>Find a business name<br>you'll <em>actually</em> love</h1>
+  <p>Describe your idea and get 6 unique, brandable business names — with taglines — in under 10 seconds.</p>
+  <a class="hero-cta" href="#tool" onclick="scrollToTool()">
+    Generate my names <span class="arrow">→</span>
+  </a>
+  <div class="proof">
+    <div class="proof-item">✓ Free tier available</div>
+    <div class="proof-dot"></div>
+    <div class="proof-item">✓ AI-powered results</div>
+    <div class="proof-dot"></div>
+    <div class="proof-item">✓ Premium unlimited</div>
+  </div>
+</section>
+
+<hr class="section-divider"/>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-tag">How it works</div>
+  <div class="section-title">Three steps to your perfect name</div>
+  <p class="section-sub">No design degree or marketing budget needed.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Describe your business</h3>
+      <p>Tell us what you do, your industry, tone, and who your customers are.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>AI generates names</h3>
+      <p>Our AI instantly creates 6 unique, catchy names with taglines and explanations.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Save & launch</h3>
+      <p>Save your favorites, check premium features, and start building your brand.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider"/>
+
+<!-- TOOL -->
+<section class="tool-section" id="tool">
+  <div class="tool-inner">
+    <div class="section-tag">The Generator</div>
+    <div class="section-title">Generate your business name</div>
+    <p class="section-sub">100% Free tier · Premium unlimited · Results in seconds</p>
+
+    <div class="form-card">
+      <div class="field">
+        <label for="desc">What does your business do?</label>
+        <textarea id="desc" placeholder="e.g. I sell handmade candles with calming scents for busy moms who want a cozy home atmosphere..."></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="industry">Industry / niche</label>
+          <select id="industry">
+            <option value="e-commerce / online shop">E-commerce / online shop</option>
+            <option value="food & beverage">Food & Beverage</option>
+            <option value="beauty & wellness">Beauty & Wellness</option>
+            <option value="tech / software">Tech / Software</option>
+            <option value="coaching & education">Coaching & Education</option>
+            <option value="creative services / design">Creative Services</option>
+            <option value="fitness & health">Fitness & Health</option>
+            <option value="real estate">Real Estate</option>
+            <option value="finance & money">Finance</option>
+            <option value="fashion & clothing">Fashion & Clothing</option>
+            <option value="parenting & family">Parenting & Family</option>
+            <option value="travel & hospitality">Travel & Hospitality</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="vibe">Brand vibe</label>
+          <select id="vibe">
+            <option value="professional & trustworthy">Professional & trustworthy</option>
+            <option value="fun & playful">Fun & playful</option>
+            <option value="modern & minimal">Modern & minimal</option>
+            <option value="bold & powerful">Bold & powerful</option>
+            <option value="warm & friendly">Warm & friendly</option>
+            <option value="luxury & premium">Luxury & premium</option>
+            <option value="quirky & creative">Quirky & creative</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="audience">Target audience <span style="font-weight:300;color:#8B7D5E">(optional)</span></label>
+        <input type="text" id="audience" placeholder="e.g. millennial women, freelancers, new parents, small business owners..."/>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generate()">✦ Generate my business names</button>
+      <div class="limit-info" id="limitInfo"></div>
+    </div>
+
+    <div id="results"></div>
+  </div>
+</section>
+
+<hr class="section-divider"/>
+
+<!-- PRICING -->
+<section class="pricing" id="pricingSection">
+  <div class="section-tag">Pricing</div>
+  <div class="section-title">Simple, honest pricing</div>
+  <p class="section-sub" style="margin-bottom:0">Start free. Upgrade when you're ready.</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup>$</sup>0</div>
+      <div class="plan-period">forever</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 6 names per day</li>
+        <li><span class="check">✓</span> Taglines included</li>
+        <li><span class="check">✓</span> All industries</li>
+        <li><span class="check">✓</span> Save up to 5 names</li>
+      </ul>
+      <a class="plan-cta" href="#tool" onclick="scrollToTool()">Get started free</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">Most popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>$</sup>9</div>
+      <div class="plan-period">one-time payment</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Unlimited generations</li>
+        <li><span class="check">✓</span> Domain availability check</li>
+        <li><span class="check">✓</span> Social handle suggestions</li>
+        <li><span class="check">✓</span> Save unlimited names</li>
+        <li><span class="check">✓</span> Priority support</li>
+      </ul>
+      <div class="plan-ctas">
+        <a class="plan-cta" href="mailto:hamzaakram090909@gmail.com?subject=NameCraft Pro Purchase">Pay with PayPal/Bank — $9</a>
+        <button class="plan-cta" onclick="initiateUSDTPayment('Pro', 9)">Pay with USDT — $9</button>
+      </div>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price"><sup>$</sup>29</div>
+      <div class="plan-period">one-time payment</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Everything in Pro</li>
+        <li><span class="check">✓</span> White-label ready</li>
+        <li><span class="check">✓</span> Bulk generation</li>
+        <li><span class="check">✓</span> Remove branding</li>
+        <li><span class="check">✓</span> Client support</li>
+      </ul>
+      <div class="plan-ctas">
+        <a class="plan-cta" href="mailto:hamzaakram090909@gmail.com?subject=NameCraft Agency Purchase">Pay with PayPal/Bank — $29</a>
+        <button class="plan-cta" onclick="initiateUSDTPayment('Agency', 29)">Pay with USDT — $29</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider"/>
+
+<!-- FAQ -->
+<section class="faq">
+  <div style="text-align:center; margin-bottom: 2.5rem;">
+    <div class="section-tag">FAQ</div>
+    <div class="section-title">Common questions</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">Is the free tier really free? <span class="faq-icon">+</span></button>
+    <div class="faq-a">Yes. Free users get 6 AI name generations per day, unlimited after upgrading to Premium.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">How are the names generated? <span class="faq-icon">+</span></button>
+    <div class="faq-a">We use Google's Gemini AI to understand your business context and generate creative, relevant, and brandable names — not random word mashups.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">Can I use the names commercially? <span class="faq-icon">+</span></button>
+    <div class="faq-a">Absolutely. All generated names are yours to use. We recommend checking trademark databases and domain availability before committing.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">How do I upgrade to Premium? <span class="faq-icon">+</span></button>
+    <div class="faq-a">Click "Pay with USDT" or "Pay with PayPal/Bank" in the pricing section. Instant activation for crypto, 24 hours for bank transfers.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="toggleFaq(this)">Can I get a refund? <span class="faq-icon">+</span></button>
+    <div class="faq-a">Yes. 7-day full refund guarantee on Premium purchases — no questions asked.</div>
+  </div>
+</section>
+
+<footer>
+  <p style="margin-bottom:6px; font-family:'Playfair Display',serif; font-size:18px; color:#C9A84C;">NameCraft AI</p>
+  <p>© 2025 NameCraft AI · Premium AI Name Generation</p>
+  <p style="margin-top:8px;"><a href="mailto:hamzaakram090909@gmail.com">Contact us</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+<script>
+const API_URL = 'http://localhost:5000/api'; // Change this to your deployed backend URL when ready
+let authToken = localStorage.getItem('authToken');
+let authMode = 'login'; // 'login' or 'signup'
+
+// Initialize on load
+window.addEventListener('load', () => {
+  if (authToken) {
+    showUserInfo();
+    document.getElementById('authBtn').classList.add('hidden');
+  } else {
+    document.getElementById('userInfo').classList.add('hidden');
+  }
+  checkGenerationLimit();
+});
+
+// ==================== AUTH FUNCTIONS ====================
+
+function showLoginModal() {
+  document.getElementById('authModal').classList.add('active');
+  authMode = 'login';
+  document.getElementById('nameField').style.display = 'none';
+  document.querySelectorAll('.modal-btn')[0].textContent = "Don't have an account? Sign Up";
+  document.querySelectorAll('.modal-btn')[1].textContent = 'Login';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function toggleAuthMode() {
+  if (authMode === 'login') {
+    authMode = 'signup';
+    document.getElementById('nameField').style.display = 'block';
+    document.querySelectorAll('.modal-btn')[0].textContent = 'Already have an account? Login';
+    document.querySelectorAll('.modal-btn')[1].textContent = 'Sign Up';
+  } else {
+    authMode = 'login';
+    document.getElementById('nameField').style.display = 'none';
+    document.querySelectorAll('.modal-btn')[0].textContent = "Don't have an account? Sign Up";
+    document.querySelectorAll('.modal-btn')[1].textContent = 'Login';
+  }
+}
+
+async function authenticate() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value.trim();
+  const name = document.getElementById('authName').value.trim();
+
+  if (!email || !password) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  try {
+    const endpoint = authMode === 'login' ? '/auth/login' : '/auth/register';
+    const body = authMode === 'login' 
+      ? { email, password }
+      : { email, password, name };
+
+    const res = await fetch(API_URL + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      authToken = data.token;
+      localStorage.setItem('authToken', authToken);
+      closeModal('authModal');
+      showUserInfo();
+      document.getElementById('authBtn').classList.add('hidden');
+      checkGenerationLimit();
+      alert(`${authMode === 'login' ? 'Login' : 'Sign up'} successful!`);
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Connection error: ' + err.message);
+  }
+}
+
+function logout() {
+  authToken = null;
+  localStorage.removeItem('authToken');
+  document.getElementById('userInfo').classList.add('hidden');
+  document.getElementById('authBtn').classList.remove('hidden');
+  document.getElementById('results').innerHTML = '';
+  alert('Logged out successfully');
+}
+
+async function showUserInfo() {
+  try {
+    const res = await fetch(API_URL + '/auth/user', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const user = await res.json();
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('userInfo').classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// ==================== GENERATION FUNCTIONS ====================
+
+async function checkGenerationLimit() {
+  if (!authToken) {
+    document.getElementById('limitInfo').textContent = 'Login to generate names';
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + '/generations/limit', {
+      headers: { 'Authorization': 'Bearer ' + authToken }
+    });
+    const data = await res.json();
+    
+    if (data.isPremium) {
+      document.getElementById('limitInfo').textContent = '✓ Premium: Unlimited generations';
+    } else {
+      document.getElementById('limitInfo').textContent = `Free tier: ${data.remaining} generations remaining today`;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function scrollToTool() {
+  if (!authToken) {
+    showLoginModal();
+    return;
+  }
+  document.getElementById('tool').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function generate() {
+  if (!authToken) {
+    alert('Please login first');
+    showLoginModal();
+    return;
+  }
+
+  const desc = document.getElementById('desc').value.trim();
+  if (!desc) {
+    alert('Please describe your business first.');
+    return;
+  }
+
+  const industry = document.getElementById('industry').value;
+  const vibe = document.getElementById('vibe').value;
+  const audience = document.getElementById('audience').value.trim();
+  const btn = document.getElementById('genBtn');
+  const out = document.getElementById('results');
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  out.innerHTML = '<div class="loading-state"><span class="spinner"></span> AI is crafting your names…</div>';
+
+  try {
+    const res = await fetch(API_URL + '/generations/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({ businessDesc: desc, industry, vibe, audience })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      let html = '<p class="results-label">✦ Your 6 generated names</p>';
+      data.names.forEach((item, i) => {
+        html += `<div class="name-card">
+          <div>
+            <div class="name-title">${item.name}</div>
+            <div class="name-tagline">"${item.tagline}"</div>
+            <div class="name-why">${item.why}</div>
+          </div>
+          <div class="name-actions">
+            <button class="save-btn" onclick="saveName('${item.name.replace(/'/g, "\\'")}', '${item.tagline.replace(/'/g, "\\'")}', '${item.why.replace(/'/g, "\\'")}')" title="Save this name">❤️</button>
+            <span class="name-num">#${i+1}</span>
+          </div>
+        </div>`;
+      });
+      html += '<button class="regen-btn" onclick="generate()">↺ Generate 6 more names</button>';
+      out.innerHTML = html;
+      checkGenerationLimit();
+    } else {
+      out.innerHTML = '<div class="error-box">' + data.error + '</div>';
+    }
+  } catch (err) {
+    out.innerHTML = '<div class="error-box">Error: ' + err.message + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✦ Generate my business names';
+}
+
+async function saveName(name, tagline, why) {
+  if (!authToken) {
+    alert('Please login first');
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + '/names/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({ name, tagline, why })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert('✓ Name saved!');
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Error saving name: ' + err.message);
+  }
+}
+
+// ==================== PAYMENT FUNCTIONS ====================
+
+async function initiateUSDTPayment(planType, amount) {
+  if (!authToken) {
+    alert('Please login first');
+    showLoginModal();
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + '/payments/initiate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({
+        paymentMethod: 'USDT',
+        amount: amount,
+        paymentType: planType
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      const walletAddress = data.walletAddress;
+      const message = `Send ${amount} USDT (BEP20 on BSC) to:\n\n${walletAddress}\n\nUse Binance Smart Chain (BSC) network. After sending, click "Verify Payment" and paste your transaction hash.`;
+      
+      if (confirm(message + '\n\nClick OK when ready to verify')) {
+        const txHash = prompt('Paste your transaction hash (starts with 0x):');
+        if (txHash) {
+          await verifyPayment(data.paymentId, txHash);
+        }
+      }
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+async function verifyPayment(paymentId, txHash) {
+  try {
+    const res = await fetch(API_URL + '/payments/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken
+      },
+      body: JSON.stringify({ paymentId, txHash })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert('✓ Payment verified! Premium activated!');
+      checkGenerationLimit();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>
